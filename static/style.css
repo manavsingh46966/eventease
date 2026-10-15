@@ -1,0 +1,71 @@
+/* EventEase Modern Mobile & Desktop UI Styles */
+
+/* Base & iOS Safe Area */
+html, body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, sans-serif;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 20px), 16px);
+}
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 12px), 12px);
+}
+
+/* Micro-interactions & animations */
+.press-down {
+  transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), filter 0.15s ease;
+}
+.press-down:active {
+  transform: scale(0.97);
+}
+
+.pulse-glow {
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Toast Notice */
+.toast-notice {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Bottom Sheet Modal Transitions */
+#booking-sheet-backdrop, #tickets-sheet-backdrop {
+  transition: opacity 0.25s ease-out;
+}
+#booking-sheet, #tickets-sheet {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Table styling for registrations roster */
+.reg-table th {
+  padding: 8px 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+}
+.reg-table td {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #1e293b;
+  border-bottom: 1px solid #f1f5f9;
+}

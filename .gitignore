@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.db
+.env
+venv/
+.venv/
+certs/
+*.pem
+*.tar.gz
+.pytest_cache/
+

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html class="h-full bg-slate-100" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>EventEase — Campus Events &amp; Registration</title>
+  <link rel="icon" href="data:,">
+  
+  <!-- Tailwind CSS CDN with forms and container-queries -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#0d4736',
+              900: '#072e23',
+              950: '#041d16',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'SF Pro Display', 'Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          boxShadow: {
+            'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
+            'card': '0 4px 20px -2px rgba(13, 71, 54, 0.06)',
+            'sheet': '0 -8px 30px rgba(0, 0, 0, 0.12)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  
+  <!-- Custom Application Styles -->
+  <link href="style.css" rel="stylesheet"/>
+</head>
+<body class="text-slate-900 bg-slate-100 min-h-screen flex flex-col font-sans">
+  
+  <!-- FULL WIDTH HEADER -->
+  <header class="sticky top-0 z-30 bg-brand-900 text-white shadow-md border-b border-brand-800">
+    <!-- Top Meta Bar (Live Load Balancing & Cluster Telemetry) -->
+    <div class="bg-brand-950/80 border-b border-brand-800/80 text-[11px] text-brand-200/90 font-mono py-1.5 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-400">CLUSTER:</span>
+          <span id="cluster-name" class="font-bold text-emerald-300">connecting…</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-400">LOAD BALANCER:</span>
+          <span id="host-name" class="bg-brand-800/90 px-2 py-0.5 rounded text-[10px] text-brand-100 font-bold">HOST: LOCAL</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Navigation Bar -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Logo Icon & Brand -->
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-brand-600 flex items-center justify-center shadow-md shrink-0">
+          <i class="fa-solid fa-ticket text-white text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">EventEase</h1>
+            <span class="text-[10px] uppercase font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">v2.4</span>
+          </div>
+          <p class="text-xs text-emerald-200/70 font-normal leading-none mt-0.5">Campus Registration Portal</p>
+        </div>
+      </div>
+
+      <!-- Desktop Nav & Quick Profile -->
+      <div class="flex items-center gap-4">
+        <!-- Desktop Header Nav Links -->
+        <nav class="hidden md:flex items-center gap-5 text-xs font-semibold text-emerald-100">
+          <a href="#" class="hover:text-white transition flex items-center gap-1.5" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">
+            <i class="fa-solid fa-calendar-days text-emerald-400"></i> Events
+          </a>
+          <a href="#" class="hover:text-white transition flex items-center gap-1.5" onclick="openMySeatsModal(); return false;">
+            <i class="fa-solid fa-ticket-simple text-emerald-400"></i> My Seats
+          </a>
+          <a href="#organizer-section" class="hover:text-white transition flex items-center gap-1.5" onclick="document.getElementById('admin').open = true;">
+            <i class="fa-solid fa-user-shield text-emerald-400"></i> Organizer Tools
+          </a>
+        </nav>
+
+        <!-- Student ID Badge -->
+        <button id="studentBadge" class="flex items-center gap-2 bg-brand-800 hover:bg-brand-700/80 transition-colors border border-brand-700/60 rounded-full pl-3 pr-1.5 py-1 press-down shadow-sm" title="Click to change your Roll Number">
+          <div class="flex flex-col text-left">
+            <span class="text-[9px] text-emerald-300/80 uppercase font-bold leading-none">Student</span>
+            <span id="studentIdDisplay" class="text-xs font-mono font-bold text-emerald-100">CS24B012</span>
+          </div>
+          <span class="w-7 h-7 rounded-full bg-brand-600 text-emerald-100 flex items-center justify-center text-xs font-bold shrink-0">
+            <i class="fa-solid fa-user"></i>
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN RESPONSIVE CONTAINER -->
+  <div class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col space-y-6">
+    
+    <!-- Dynamic Status Notification Toast Banner -->
+    <div id="noticeBanner" class="hidden px-4 py-3 rounded-xl text-xs font-medium border shadow-sm transition-all" role="alert">
+      <div class="flex items-start gap-2.5">
+        <i id="noticeIcon" class="fa-solid fa-circle-check mt-0.5 text-sm"></i>
+        <div class="flex-1" id="noticeText">Notification message</div>
+        <button type="button" onclick="hideNotice()" class="text-slate-400 hover:text-slate-600 text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Notification Banner (Full width on desktop) -->
+    <section class="bg-gradient-to-r from-brand-950 via-brand-900 to-brand-800 text-emerald-50 p-5 rounded-2xl shadow-sm border border-emerald-800/40">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 text-emerald-300">
+            <i class="fa-solid fa-bolt-lightning text-lg"></i>
+          </div>
+          <div>
+            <h2 class="text-xs font-semibold text-emerald-300 uppercase tracking-wider">Fast Instant Reservation</h2>
+            <p class="text-sm sm:text-base font-semibold text-white/95 leading-snug mt-0.5">
+              Pick an event, enter your roll number, and your seat is instantly held.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
+          <div class="text-right hidden sm:block">
+            <div class="text-[11px] font-medium text-emerald-300">Zero Overselling Guarantee</div>
+            <div class="text-[10px] text-emerald-400/70 font-mono">Row-locked across all instances</div>
+          </div>
+          <button onclick="openMySeatsModal()" class="press-down bg-emerald-500 hover:bg-emerald-400 text-brand-950 font-bold text-xs px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2">
+            <i class="fa-solid fa-ticket-simple"></i>
+            <span>View My Tickets</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toolbar: Category Filter Chips & Real-time Indicator -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-3 sm:p-4 rounded-2xl border border-slate-200/90 shadow-sm">
+      <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 sm:pb-0" id="filterChipsContainer">
+        <button id="chipAll" onclick="setCategoryFilter('all')" class="bg-brand-800 text-white px-4 py-2 rounded-xl shrink-0 shadow-xs flex items-center gap-2 text-xs font-semibold press-down transition">
+          <span>All Events</span>
+          <span id="allCountBadge" class="bg-emerald-400/30 text-emerald-200 text-[10px] px-1.5 py-0.5 rounded-full font-mono">0</span>
+        </button>
+        <button id="chipHackathons" onclick="setCategoryFilter('hackathon')" class="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl shrink-0 hover:bg-slate-100 transition press-down text-xs font-semibold">
+          <i class="fa-solid fa-trophy text-amber-500 mr-1 text-[11px]"></i> Hackathons
+        </button>
+        <button id="chipWorkshops" onclick="setCategoryFilter('workshop')" class="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl shrink-0 hover:bg-slate-100 transition press-down text-xs font-semibold">
+          <i class="fa-solid fa-laptop-code text-blue-500 mr-1 text-[11px]"></i> Workshops
+        </button>
+        <button id="chipSummits" onclick="setCategoryFilter('summit')" class="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl shrink-0 hover:bg-slate-100 transition press-down text-xs font-semibold">
+          <i class="fa-solid fa-microchip text-purple-500 mr-1 text-[11px]"></i> Summits
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between sm:justify-end gap-3 text-xs text-slate-500 font-medium px-1 sm:px-0">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400 hidden sm:inline">Active Sessions</span>
+        <span class="text-[12px] text-emerald-700 font-semibold flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/50">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          Real-time Seat Sync
+        </span>
+      </div>
+    </div>
+
+    <!-- RESPONSIVE EVENTS GRID (1 col on mobile, 2 col on tablet, 3 col on desktop) -->
+    <section id="events" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Upcoming events">
+      <div class="col-span-full text-center py-12 text-slate-400 text-sm font-medium">
+        <i class="fa-solid fa-spinner fa-spin text-2xl text-emerald-600 mb-2"></i>
+        <p>Loading campus events…</p>
+      </div>
+    </section>
+
+    <!-- ORGANIZER TOOLS SECTION (Responsive wide card) -->
+    <section class="mt-8" id="organizer-section">
+      <details class="group bg-white rounded-2xl border border-slate-200/90 shadow-card overflow-hidden" id="admin">
+        <summary class="flex items-center justify-between p-5 cursor-pointer select-none bg-slate-50 hover:bg-slate-100/70 transition">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-brand-800 text-white flex items-center justify-center text-sm shadow-sm">
+              <i class="fa-solid fa-sliders"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-900 leading-tight">Organizer Tools</h3>
+              <p class="text-xs text-slate-500">Event creation, attendee roster &amp; capacity management</p>
+            </div>
+          </div>
+          <span class="w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-500 flex items-center justify-center text-xs group-open:rotate-180 transition-transform duration-200">
+            <i class="fa-solid fa-chevron-down"></i>
+          </span>
+        </summary>
+        
+        <div class="p-6 border-t border-slate-100 space-y-6">
+          <!-- Admin Key Field -->
+          <div class="max-w-md">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5" for="adminKey">
+              Admin Key <span class="text-emerald-700">*</span>
+            </label>
+            <div class="relative rounded-xl">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 text-sm">
+                <i class="fa-solid fa-key"></i>
+              </div>
+              <input class="w-full text-sm rounded-xl border-slate-200 pl-10 pr-10 py-2.5 focus:border-brand-700 focus:ring-brand-700" id="adminKey" placeholder="Enter secure admin key (default: secret)" type="password" autocomplete="off"/>
+              <button class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 text-sm" onclick="togglePasswordVisibility('adminKey')" type="button">
+                <i id="adminKeyEye" class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">Required to create events or manage attendee registrations.</p>
+          </div>
+
+          <!-- Create Event Form (2-column on desktop) -->
+          <form id="eventForm" class="space-y-4 pt-2 border-t border-slate-100">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Create New Campus Event</h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="event-title">Event Title</label>
+                <input name="title" class="w-full text-sm rounded-xl border-slate-200 py-2.5 px-3 focus:border-brand-700 focus:ring-brand-700" id="event-title" placeholder="e.g. NextGen Web Summit" required minlength="3" maxlength="100" type="text"/>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="event-date">Date</label>
+                <input name="date" class="w-full text-sm rounded-xl border-slate-200 py-2.5 px-3 text-slate-700 focus:border-brand-700 focus:ring-brand-700" id="event-date" type="date" required/>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="event-venue">Venue</label>
+                <input name="venue" class="w-full text-sm rounded-xl border-slate-200 py-2.5 px-3 focus:border-brand-700 focus:ring-brand-700" id="event-venue" placeholder="Hall / Lab room" required minlength="2" maxlength="100" type="text"/>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1" for="event-seats">Total Seats</label>
+                <input name="total_seats" class="w-full text-sm rounded-xl border-slate-200 py-2.5 px-3 focus:border-brand-700 focus:ring-brand-700" id="event-seats" placeholder="50" min="1" max="5000" required type="number"/>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1" for="event-desc">Description</label>
+              <textarea name="description" class="w-full text-sm rounded-xl border-slate-200 py-2 px-3 focus:border-brand-700 focus:ring-brand-700" id="event-desc" placeholder="Brief outline of agenda, speakers or tracks..." rows="2" maxlength="300"></textarea>
+            </div>
+
+            <button id="createEventBtn" class="press-down w-full sm:w-auto py-3 px-6 rounded-xl bg-brand-800 hover:bg-brand-900 active:bg-brand-950 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition" type="submit">
+              <i class="fa-solid fa-plus-circle"></i>
+              <span>Create Event</span>
+            </button>
+          </form>
+
+          <!-- Registrations & Lifecycle Section -->
+          <div class="pt-6 border-t border-slate-100 space-y-4">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">
+              Registrations &amp; Lifecycle
+            </h4>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div class="flex-1">
+                <select class="w-full text-sm rounded-xl border-slate-200 py-2.5 bg-slate-50 font-medium text-slate-700 pr-8 focus:border-brand-700 focus:ring-brand-700" id="eventSelect" aria-label="Choose event">
+                  <!-- Populated by app.js -->
+                </select>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <button id="loadRegs" class="press-down flex-1 sm:flex-none py-2.5 px-4 rounded-xl border border-brand-800 bg-brand-50/50 hover:bg-brand-100/50 text-brand-900 font-semibold text-xs flex items-center justify-center gap-2 transition" type="button">
+                  <i class="fa-regular fa-id-badge text-brand-700"></i>
+                  <span>Show Registrations</span>
+                </button>
+                <button id="deleteEvent" class="press-down flex-1 sm:flex-none py-2.5 px-4 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-xs flex items-center justify-center gap-2 transition" type="button">
+                  <i class="fa-regular fa-trash-can text-rose-600"></i>
+                  <span>Delete Event</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Registrations Roster Table -->
+            <div id="regTableWrapper" class="hidden mt-4 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left reg-table" id="regTable">
+                  <thead class="bg-slate-50">
+                    <tr><th>Name</th><th>Roll no.</th><th>Registered At</th></tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 bg-white">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </div>
+
+  <!-- REGISTRATION MODAL (Responsive: Center dialog on desktop, bottom sheet on mobile) -->
+  <div class="fixed inset-0 bg-slate-950/60 z-50 backdrop-blur-xs hidden transition-opacity flex items-end sm:items-center justify-center p-0 sm:p-4" id="booking-sheet-backdrop">
+    <div class="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl transform translate-y-full sm:translate-y-0 transition-all duration-300" id="booking-sheet">
+      <!-- Sheet Handle on mobile -->
+      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+      
+      <div class="flex items-start justify-between mb-5">
+        <div>
+          <span class="text-[10px] font-bold tracking-wider uppercase text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Fast Seat Hold</span>
+          <h3 class="text-lg font-bold text-slate-900 mt-1" id="modal-event-title">Event Registration</h3>
+          <p class="text-xs text-slate-500 font-medium mt-0.5" id="modal-event-seats">Seats left</p>
+        </div>
+        <button class="w-9 h-9 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 press-down" onclick="closeRegistrationModal()" type="button">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <form class="space-y-4" id="regForm">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1" for="regName">
+            Full Name <span class="text-emerald-700">*</span>
+          </label>
+          <input class="w-full text-sm rounded-xl border-slate-200 py-2.5 px-3 focus:border-brand-700 focus:ring-brand-700" id="regName" name="name" placeholder="e.g. Alex Turner" required minlength="2" maxlength="80" autocomplete="name" type="text"/>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1" for="roll-number-input">
+            Your Roll Number / Student ID <span class="text-emerald-700">*</span>
+          </label>
+          <div class="relative">
+            <input class="w-full uppercase tracking-wider font-mono text-sm rounded-xl border-slate-200 py-2.5 px-3 focus:border-brand-700 focus:ring-brand-700" id="roll-number-input" name="roll_no" placeholder="e.g. CS24B012" required minlength="3" maxlength="20" type="text"/>
+            <div class="absolute right-3 inset-y-0 flex items-center pointer-events-none text-emerald-600">
+              <i class="fa-solid fa-shield-halved text-xs"></i>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">Your seat ticket will be synced with your university account.</p>
+        </div>
+
+        <!-- In-Modal Alert Box for Rate-limit or Duplicate Roll -->
+        <div id="dlgMsg" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
+
+        <div class="bg-emerald-50/70 border border-emerald-200/60 rounded-xl p-3 flex items-center gap-3 text-xs text-brand-900">
+          <i class="fa-solid fa-circle-info text-emerald-600 text-base"></i>
+          <span>No fee required. Free for all enrolled campus students.</span>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button class="press-down w-1/3 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs" type="button" onclick="closeRegistrationModal()">
+            Cancel
+          </button>
+          <button id="confirm" class="press-down flex-1 py-3 px-5 rounded-xl bg-brand-800 hover:bg-brand-900 active:bg-brand-950 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition" type="submit">
+            <i class="fa-solid fa-ticket"></i>
+            <span>Confirm &amp; Hold Seat</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MY SEATS MODAL (Responsive Dialog) -->
+  <div class="fixed inset-0 bg-slate-950/60 z-50 backdrop-blur-xs hidden transition-opacity flex items-end sm:items-center justify-center p-0 sm:p-4" id="tickets-sheet-backdrop">
+    <div class="w-full max-w-lg bg-white rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl transform translate-y-full sm:translate-y-0 transition-all duration-300 max-h-[80vh] flex flex-col" id="tickets-sheet">
+      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-ticket-simple"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">My Confirmed Tickets</h3>
+            <p class="text-xs text-slate-500">Held registrations in this browser session</p>
+          </div>
+        </div>
+        <button class="w-9 h-9 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 press-down" onclick="closeMySeatsModal()" type="button">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+      <div class="overflow-y-auto space-y-3 flex-1 pb-2" id="ticketsContainer">
+        <!-- Populated by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation (Hidden on desktop) -->
+  <nav aria-label="Mobile Navigation" class="md:hidden fixed bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-4 py-2 z-40 pb-safe flex items-center justify-around text-[10px] font-medium text-slate-500 shadow-lg">
+    <a class="flex flex-col items-center gap-1 text-brand-800 font-semibold py-1 press-down" href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">
+      <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-brand-800">
+        <i class="fa-solid fa-calendar-days text-sm"></i>
+      </div>
+      <span>Events</span>
+    </a>
+    <a class="flex flex-col items-center gap-1 hover:text-slate-900 py-1 transition press-down" href="#" onclick="openMySeatsModal(); return false;">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100">
+        <i class="fa-solid fa-ticket-simple text-sm"></i>
+      </div>
+      <span>My Seats</span>
+    </a>
+    <a class="flex flex-col items-center gap-1 hover:text-slate-900 py-1 transition press-down" href="#organizer-section" onclick="document.getElementById('admin').open = true;">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:bg-slate-100">
+        <i class="fa-solid fa-user-shield text-sm"></i>
+      </div>
+      <span>Admin</span>
+    </a>
+  </nav>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
